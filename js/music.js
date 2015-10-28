@@ -21,12 +21,6 @@ var Music = Parse.Object.extend('Music');
 
 // // Save your instance of your song -- and go see it on parse.com!
 // musicItem.save();
-// musicItem.save();
-// musicItem.save();
-// musicItem.save();
-// musicItem.save();
-// musicItem.save();
-// musicItem.save();
 
 // Click event when form is submitted
 $('form').submit(function() {
@@ -46,22 +40,10 @@ $('form').submit(function() {
 		$(this).val('');
 	});
 
-	// var bandName = $('#band-name').val();
-	// musicItem.set('band', bandName);
+	musicItem.save(null, {
+		success:getData//Gets data after adding songs.
+	});
 
-
-	// var urlForm = $('#url').val();
-	// musicItem.set('website', urlForm);
-	    
-
-	// var songForm = $('#song').val();
-	// musicItem.set('song', songForm);
-
-	musicItem.save();
-
-	// $('#band-name').val('');
-	// $('#website').val('');
-	// $('#song').val('');
 	return false
 })
 
@@ -71,21 +53,34 @@ var getData = function() {
 	
 
 	// Set up a new query for our Music class
-
+	var query = new Parse.Query(Music);
 
 	// Set a parameter for your query -- where the website property isn't missing
+	query.notEqualTo('url','');
 
 
 	/* Execute the query using ".find".  When successful:
 	    - Pass the returned data into your buildList function
 	*/
+
+	query.find({
+		success:function(data){
+			buildList(data);
+		}
+		//success:buildList;
+	})
 }
 
 // A function to build your list
 var buildList = function(data) {
 	// Empty out your unordered list
+	$('#list').empty();
+
 	
 	// Loop through your data, and pass each element to the addItem function
+	data.forEach(function(d) {
+		addItem(d);
+	});
 
 }
 
@@ -93,16 +88,38 @@ var buildList = function(data) {
 // This function takes in an item, adds it to the screen
 var addItem = function(item) {
 	// Get parameters (website, band, song) from the data item passed to the function
+	var name = item.get('band');
+	var url = item.get('url');
+	var song = item.get('song');
+
 
 	
 	// Append li that includes text from the data item
-
+	var anchor = $('<a></a>').attr('href', url);
+	anchor.attr('target', '_blank');
+	anchor.text(name);
+	var intro = "Want to look at ";
+	var last = "? Your favorite song is " + song + ". ";
+	var li = $('<li></li>').text(intro);
+	li.append(anchor);
+	li.append(last);
 
 	
+	
 	// Time pending, create a button that removes the data item on click
+
+	var button = $('<button></button>').addClass("btn btn-danger btn-xs").append('<span class="glyphicon glyphicon-remove"></span>');
+	button.click(function(){
+		item.destroy({
+			success:getData
+		})
+	});
+
+	li.append(button);
+	$('#list').append(li);
 	
 }
 
 // Call your getData function when the page loads
 
-
+$(document).ready(getData());
